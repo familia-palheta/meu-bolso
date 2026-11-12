@@ -294,6 +294,7 @@ const ICON={
   list:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>',
   cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></svg>',
   more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
   left:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>',
   right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
@@ -419,16 +420,21 @@ function comprometido(m){
 function render(){
   const app=$("#app");
   if(!S.me){app.innerHTML=vLogin();return}
+  if(S.bloqueado){app.innerHTML=`<div class="login"><div class="logo"><div class="logo-mark">${ICON.wallet}</div><b>Meu Bolso</b></div>
+    <div class="card vazio"><div class="em">🔒</div><h2>Falta liberar seu acesso</h2><p class="muted">Sua conta foi criada, mas o e-mail <b>${esc(S.me.email)}</b> ainda não foi liberado. Peça para quem te mandou o app liberar esse e-mail.</p>
+    <div class="acoes"><button class="btn full" data-act="recarregar">Já liberaram? Tentar de novo</button><button class="btn sec full" data-act="sairbloq">Sair</button></div></div></div>`;return}
   const nomeVer=readOnly()?(S.viewPerfil?.nome||"…"):(S.perfil?.nome||"");
   let h=`<header class="top"><div class="top-in">
     <div class="logo"><div class="logo-mark">${ICON.wallet}</div><b>Meu Bolso</b></div>
-    ${S.isAdmin?`<button class="who" data-act="trocar" aria-label="Família: trocar de conta"><span class="av" style="background:${corAv(nomeVer)}">${esc(inicial(nomeVer))}</span><span>${esc(primeiroNome(nomeVer))}</span>${ICON.down}</button>`:""}
+    ${S.isAdmin&&readOnly()?`<button class="who" data-act="trocar" aria-label="Família: trocar de conta"><span class="av" style="background:${corAv(nomeVer)}">${esc(inicial(nomeVer))}</span><span>${esc(primeiroNome(nomeVer))}</span>${ICON.down}</button>`:""}
   </div></header>`;
   if(api.mode==="demo")h+=`<div class="banner demo"><div><span>Modo demonstração: dados de exemplo, só neste aparelho.</span></div></div>`;
-  if(readOnly())h+=`<div class="banner"><div><span>Vendo a conta de <b>${esc(S.viewPerfil?.nome)}</b> · só leitura</span><button data-act="voltar">Minha conta</button></div></div>`;
+  if(readOnly())h+=`<div class="banner"><div><span>Vendo a conta de <b>${esc(S.viewPerfil?.nome)}</b> · só leitura</span><button data-act="voltar">Voltar à família</button></div></div>`;
+  const hub=S.isAdmin&&!readOnly();
+  if(hub)S.tab="familia";
   const v={inicio:vInicio,lista:vLista,pagar:vPagar,familia:vFamilia,mais:vMais}[S.tab]||vInicio;
-  h+=`<main>${S.carregado?v():'<div class="load">Carregando…</div>'}</main>`;
-  h+=vNav();
+  h+=`<main>${hub||S.carregado?v():'<div class="load">Carregando…</div>'}</main>`;
+  if(!hub)h+=vNav();
   app.innerHTML=h;
   if(S.tab==="familia")carregarFamilia();
 }
@@ -438,7 +444,7 @@ function vNav(){
   const atr=S.carregado?pendentesAgora().filter(x=>x.venc<=hoje()).length:0;
   return `<nav class="nav"><div class="nav-in">
     ${b("inicio","home","Início")}${b("lista","list","Lançamentos")}
-    ${readOnly()?`<button class="fab" data-act="voltar" aria-label="Voltar para minha conta" style="background:var(--muted);box-shadow:none">${ICON.home}</button>`:`<button class="fab" data-act="novo" aria-label="Lançar">${ICON.plus}</button>`}
+    ${readOnly()?`<button class="fab" data-act="voltar" aria-label="Voltar à família" style="background:var(--muted);box-shadow:none">${ICON.users}</button>`:`<button class="fab" data-act="novo" aria-label="Lançar">${ICON.plus}</button>`}
     ${b("pagar","cal","A pagar",atr)}${b("mais","more","Mais")}
   </div></nav>`;
 }
@@ -629,12 +635,19 @@ function vComprometido(){
 
 function vFamilia(){
   let h=vMes();const cache=S.famMes[S.mes];
-  h+=`<p class="muted" style="margin:0 0 12px;font-size:14px">Toque numa pessoa para abrir a conta dela. Você só lê; quem lança é cada um.</p>`;
-  if(!S.familia.length)return h+`<div class="load" style="min-height:120px">Carregando…</div>`;
-  for(const p of S.familia){const t=cache?.[p.uid],eu=p.uid===S.me.uid;
+  const pessoas=S.familia.filter(p=>p.uid!==S.me.uid);
+  h+=`<p class="muted" style="margin:0 0 12px;font-size:14px">Toque numa pessoa para ver o Início, os lançamentos e o que ela tem a pagar. Você só olha; quem lança é cada um.</p>`;
+  if(!pessoas.length)h+=`<div class="card vazio"><div class="em">👨‍👩‍👧</div><h2>Ninguém usando ainda</h2><p class="muted">Libere o e-mail da pessoa aqui embaixo e mande o link do app. Assim que ela criar a conta, aparece nesta lista.</p></div>`;
+  for(const p of pessoas){const t=cache?.[p.uid],eu=p.uid===S.me.uid;
     h+=`<button class="pessoa" data-act="abrir" data-uid="${esc(p.uid)}"><span class="av" style="background:${corAv(p.nome)}">${esc(inicial(p.nome))}</span>
       <span><b>${esc(p.nome)}${eu?" (você)":""}</b><span class="s">${t?`Entrou <span class="nw">${brl0(t.e)}</span> · Saiu <span class="nw">${brl0(t.s)}</span>`:"…"}</span></span>
       <span class="sb num" style="color:${t&&t.e-t.s<0?"var(--out)":"var(--in)"}">${t?brl0(Math.abs(t.e-t.s)):""}<small>${t?(t.e-t.s<0?"faltou":"sobrou"):""}</small></span></button>`}
+  h+=`<section class="card" style="margin-top:18px"><h2>Quem pode usar o app</h2>
+    <p class="muted small" style="margin:-6px 0 10px">Só os e-mails desta lista conseguem usar o app. Quem não estiver aqui até cria a conta, mas fica esperando você liberar. Você não precisa estar na lista.</p>
+    <div class="lista-cat">${(S.acesso||[]).map((e,i)=>`<span class="lc">${esc(e)}<button data-act="delacesso" data-i="${i}" aria-label="Tirar ${esc(e)}">${ICON.x}</button></span>`).join("")||'<span class="muted small">Ninguém liberado ainda.</span>'}</div>
+    <div class="add-cat" style="grid-template-columns:1fr auto"><input id="novoacesso" type="email" placeholder="e-mail da pessoa" autocomplete="off" aria-label="E-mail para liberar"><button class="btn" data-act="addacesso">Liberar</button></div>
+    <p class="faint small" style="margin:8px 0 0">Tirar alguém da lista bloqueia o acesso, mas não apaga os lançamentos dessa pessoa.</p></section>
+    ${readOnly()?"":`<button class="menu-item" data-act="sair" style="color:var(--out);justify-content:center">${api.mode==="demo"?"Recomeçar demonstração":"Sair da conta"}</button>`}`;
   return h;
 }
 let famCarregando=null;
@@ -958,6 +971,11 @@ document.addEventListener("click",async ev=>{
     case "mes":S[d.c]=mesAdd(S[d.c],+d.n);S.filtroCat=null;render();break;
     case "novo":novoLanc(d.modo);break;
     case "menu":abrirSheet({kind:"menu"});break;
+    case "recarregar":location.reload();break;
+    case "sairbloq":api.sair();break;
+    case "addacesso":{const e=($("#novoacesso").value||"").trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))return toast("Digite um e-mail válido.");const l=[...(S.acesso||[])];if(l.includes(e))return toast("Esse e-mail já está liberado.");l.push(e);
+      try{await api.setAcesso(l);S.acesso=l;toast("Liberado! Avise a pessoa para tocar em “Tentar de novo”.");render()}catch(x){toast("Não consegui salvar. Confira as regras do Firebase.")}break}
+    case "delacesso":{if(!confirmar(el,"Toque de novo no × para tirar"))return;const l=(S.acesso||[]).filter((_,i)=>i!==+d.i);try{await api.setAcesso(l);S.acesso=l;render()}catch(x){toast("Não consegui salvar.")}break}
     case "editar":{if(readOnly())return toast("Só leitura: quem edita é o dono da conta.");const l=S.lanc.find(x=>x.id===d.id);if(l)editarLanc(l);break}
     case "fechar":case "fecharov":fecharSheet();break;
     case "set":{let v=d.v;if(/^\d+$/.test(v)&&["parcelas","nParc"].includes(d.k))v=+v;
@@ -994,7 +1012,7 @@ document.addEventListener("click",async ev=>{
     case "filtro":S.filtroCat=d.cat||null;render();break;
     case "trocar":S.tab="familia";S.famMes={};render();break;
     case "abrir":await abrirConta(d.uid);S.tab="inicio";render();scrollTo(0,0);break;
-    case "voltar":await abrirConta(S.me.uid);S.tab="inicio";render();break;
+    case "voltar":await abrirConta(S.me.uid);S.tab=S.isAdmin?"familia":"inicio";S.famMes={};render();scrollTo(0,0);break;
     case "salvarnome":{const n=$("#pnome").value.trim();if(!n)return;S.perfil.nome=n;await salvarPerfil();toast("Nome salvo.");render();break}
     case "addcat":{const t=d.tipo,n=$("#nn-"+t).value.trim(),e=$("#ne-"+t).value.trim()||"🏷️";if(!n)return toast("Escreva o nome da categoria.");const cs=S.perfil.categorias[t];if(cs.some(c=>c.nome.toLowerCase()===n.toLowerCase()))return toast("Essa categoria já existe.");cs.push({nome:n,emoji:e});await salvarPerfil();render();break}
     case "delcat":{const t=d.tipo,i=+d.i,c=S.perfil.categorias[t][i];if(!confirmar(el,"Toque de novo no × para remover"))return;S.perfil.categorias[t].splice(i,1);await salvarPerfil();toast(`"${c.nome}" removida. Os lançamentos antigos continuam.`);render();break}
@@ -1064,16 +1082,20 @@ async function abrirConta(uid){
   }
 }
 async function aoEntrar(user){
-  if(!user){S.me=null;S.perfil=null;unsubs.forEach(u=>u&&u());unsubs=[];render();return}
-  S.me={uid:user.uid,email:user.email};
-  let p=null;try{p=await api.perfil(user.uid)}catch(e){console.warn(e)}
-  if(!p){p={nome:pendingNome||user.displayName||(user.email||"").split("@")[0],email:user.email||"",categorias:structuredClone(CAT_PADRAO),contas:structuredClone(CONTAS_PADRAO),cartoes:[],criadoEm:Date.now()};try{await api.savePerfil(user.uid,p)}catch(e){console.warn(e)}}
+  if(!user){S.me=null;S.perfil=null;S.bloqueado=false;S.isAdmin=false;unsubs.forEach(u=>u&&u());unsubs=[];render();return}
+  S.me={uid:user.uid,email:user.email};S.bloqueado=false;
+  const negado=e=>e&&e.code==="permission-denied";
+  let p=null;
+  try{p=await api.perfil(user.uid)}catch(e){console.warn(e);if(negado(e)){S.bloqueado=true;render();return}}
+  if(!p){p={nome:pendingNome||user.displayName||(user.email||"").split("@")[0],email:user.email||"",categorias:structuredClone(CAT_PADRAO),contas:structuredClone(CONTAS_PADRAO),cartoes:[],criadoEm:Date.now()};
+    try{await api.savePerfil(user.uid,p)}catch(e){console.warn(e);if(negado(e)){S.bloqueado=true;render();return}}}
   if(!p.categorias)p.categorias=structuredClone(CAT_PADRAO);
   if(!p.contas)p.contas=structuredClone(CONTAS_PADRAO);
   if(!p.cartoes)p.cartoes=[];
   S.perfil=p;
   await abrirConta(user.uid);render();
-  try{const l=await listarFamilia();if(l.some(x=>x.uid!==user.uid)){S.familia=l;S.isAdmin=true;render()}}catch(e){}
+  // administradora: só ela consegue ler a lista de acesso
+  try{S.acesso=await api.getAcesso();S.isAdmin=true;S.tab="familia";render();S.familia=await listarFamilia();S.famMes={};render()}catch(e){}
 }
 
 /* ============ dados: Firebase ou demonstração ============ */
@@ -1099,6 +1121,8 @@ async function firebaseApi(cfg){
     remove:(uid,c,id)=>D.deleteDoc(D.doc(db,"usuarios",uid,c,id)),
     removeMany:(uid,c,ids)=>{const b=D.writeBatch(db);for(const id of ids)b.delete(D.doc(db,"usuarios",uid,c,id));return b.commit()},
     familia:async()=>{const s=await D.getDocs(D.collection(db,"usuarios"));return s.docs.map(d=>({uid:d.id,...d.data()}))},
+    getAcesso:async()=>{const s=await D.getDoc(D.doc(db,"config","acesso"));return s.exists()?(s.data().emails||[]):[]},
+    setAcesso:emails=>D.setDoc(D.doc(db,"config","acesso"),{emails}),
     lancDoMes:async(uid,m)=>{const s=await D.getDocs(D.query(col(uid,"lancamentos"),D.where("data",">=",m+"-01"),D.where("data","<=",m+"-31")));return s.docs.map(d=>d.data())},
   };
 }
@@ -1126,6 +1150,8 @@ function demoApi(){
     removeMany:async(uid,c,ids)=>{const s=new Set(ids);st.col[c][uid]=arr(uid,c).filter(x=>!s.has(x.id));save();emit(uid,c)},
     familia:async()=>Object.entries(st.perfis).map(([uid,p])=>({uid,...structuredClone(p)})),
     lancDoMes:async(uid,m)=>arr(uid,"lancamentos").filter(l=>l.data.startsWith(m)),
+    getAcesso:async()=>st.acesso||(st.acesso=["rodrigo@exemplo.com"]),
+    setAcesso:async emails=>{st.acesso=[...emails];save()},
   };
 }
 function seedDemo(){
