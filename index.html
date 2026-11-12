@@ -220,6 +220,30 @@ main{max-width:620px;margin:0 auto;padding:6px 16px calc(110px + env(safe-area-i
 .mini-lista div:first-child{border-top:0}
 .mini-lista span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
+.hub-hello{margin:6px 2px 16px}
+.hub-hello .eyebrow{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-2)}
+.hub-hello h1{font-size:30px;margin:2px 0 2px}
+.hub-hello p{margin:0;color:var(--muted);font-weight:600;text-transform:none}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+.kpi span{display:block;font-size:12px;font-weight:700;color:var(--muted);line-height:1.2}
+.kpi b{display:block;font-family:var(--display);font-size:20px;margin-top:4px;line-height:1.1}
+.tiles{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:640px){.tiles{grid-template-columns:repeat(3,1fr)}}
+.tile{all:unset;cursor:pointer;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;transition:border-color .15s,box-shadow .15s}
+.tile:hover{border-color:var(--brand-2);box-shadow:0 6px 18px rgba(29,38,34,.08)}
+.tile .tic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;margin-bottom:6px}
+.tile .tic svg{width:24px;height:24px}
+.tile .tt{font-family:var(--display);font-size:21px;font-weight:700}
+.tile .td{font-size:14px;color:var(--muted);font-weight:600;line-height:1.35}
+.tile .tf{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:10px;border-top:1px solid var(--line);font-size:13.5px;font-weight:800;color:var(--ink)}
+.tile .tf svg{width:16px;height:16px;color:var(--faint)}
+.subhead{display:flex;align-items:center;gap:12px;margin:6px 0 14px}
+.subhead .x{width:42px;height:42px;background:var(--card);border:1px solid var(--line)}
+.subhead .x svg{width:18px;height:18px}
+.subhead h1{font-size:24px}
+.subhead p{margin:0;color:var(--muted);font-size:13.5px;font-weight:600}
+.pg .av{border-radius:50%}
 .menu-ops{display:grid;gap:10px}
 .menu-op{all:unset;cursor:pointer;display:grid;grid-template-columns:52px 1fr 18px;gap:12px;align-items:center;border:1.5px solid var(--line);border-radius:18px;padding:14px;box-sizing:border-box;width:100%}
 .menu-op:hover{border-color:var(--brand-2);background:var(--soft)}
@@ -295,6 +319,8 @@ const ICON={
   cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></svg>',
+  key:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 8.7-8.7M16 7l3 3M14 9l2 2"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>',
   more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
   left:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>',
   right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
@@ -637,27 +663,60 @@ function vComprometido(){
 }
 
 function vFamilia(){
-  let h=vMes();const cache=S.famMes[S.mes];
-  const pessoas=S.familia.filter(p=>p.uid!==S.me.uid);
-  h+=`<p class="muted" style="margin:0 0 12px;font-size:14px">Toque numa pessoa para ver o Início, os lançamentos e o que ela tem a pagar. Você só olha; quem lança é cada um.</p>`;
-  if(!pessoas.length)h+=`<div class="card vazio"><div class="em">👨‍👩‍👧</div><h2>Ninguém usando ainda</h2><p class="muted">Libere o e-mail da pessoa aqui embaixo e mande o link do app. Assim que ela criar a conta, aparece nesta lista.</p></div>`;
-  for(const p of pessoas){const t=cache?.[p.uid],eu=p.uid===S.me.uid;
+  if(readOnly())return vHubFamilia();
+  const v=S.hubView||"home";
+  if(v==="familia")return vSub("Contas da família","Veja como cada um está no mês")+vHubFamilia();
+  if(v==="acessos")return vSub("Acessos ao app","Quem pode entrar e lançar")+vHubAcessos();
+  if(v==="config")return vSub("Configurações","Categorias usadas pela família")+vHubConfig();
+  return vHubHome();
+}
+function vSub(t,s){return `<div class="subhead"><button class="x" data-act="hub" data-v="home" aria-label="Voltar ao painel">${ICON.left}</button><div><h1>${t}</h1><p>${s}</p></div></div>`}
+function pessoasFam(){return S.familia.filter(p=>p.uid!==S.me.uid)}
+function vHubHome(){
+  const ps=pessoasFam();
+  const lib=(S.acesso||[]).length,emailsUsando=new Set(ps.map(p=>(p.email||"").toLowerCase()));
+  const aguard=(S.acesso||[]).filter(x=>!emailsUsando.has(x)).length;
+  const G=S.catGlobal||CAT_PADRAO,ncat=G.saida.length+G.entrada.length;
+  const nome=primeiroNome(S.perfil?.nome)||"";
+  const tile=(v,ic,cor,t,d,foot)=>`<button class="tile" data-act="hub" data-v="${v}"><span class="tic" style="background:${cor}">${ic}</span><span class="tt">${t}</span><span class="td">${d}</span><span class="tf">${foot}${ICON.right}</span></button>`;
+  return `<div class="hub-hello"><span class="eyebrow">Painel da administradora</span><h1>Olá${nome?", "+esc(nome):""}</h1><p>O que você quer fazer hoje?</p></div>
+  <div class="tiles">
+    ${tile("familia",ICON.users,"var(--brand)","Contas da família","Abra a conta de cada pessoa para ver lançamentos, gastos e o que falta pagar.",`${ps.length} ${ps.length===1?"pessoa":"pessoas"}`)}
+    ${tile("acessos",ICON.key,"#3B6EA1","Acessos","Libere quem pode usar o app e bloqueie quando precisar.",`${lib} liberado${lib===1?"":"s"}${aguard?` · ${aguard} sem conta ainda`:""}`)}
+    ${tile("config",ICON.gear,"#8A5A1C","Configurações","Categorias de gasto e de entrada usadas por todos.",`${ncat} categorias`)}
+  </div>
+  <button class="menu-item" data-act="sair" style="color:var(--out);justify-content:center;margin-top:10px">${api.mode==="demo"?"Recomeçar demonstração":"Sair da conta"}</button>`;
+}
+function vHubFamilia(){
+  let h=vMes();const cache=S.famMes[S.mes];const ps=pessoasFam();
+  if(!S.familia.length&&S.isAdmin)h+=`<div class="load" style="min-height:90px">Carregando…</div>`;
+  else if(!ps.length)h+=`<div class="card vazio"><div class="em">👨‍👩‍👧</div><h2>Ninguém usando ainda</h2><p class="muted">Libere o e-mail da pessoa em Acessos e mande o link do app. Assim que ela criar a conta, aparece aqui.</p><button class="btn" data-act="hub" data-v="acessos">Ir para Acessos</button></div>`;
+  for(const p of ps){const t=cache?.[p.uid];
     h+=`<button class="pessoa" data-act="abrir" data-uid="${esc(p.uid)}"><span class="av" style="background:${corAv(p.nome)}">${esc(inicial(p.nome))}</span>
-      <span><b>${esc(p.nome)}${eu?" (você)":""}</b><span class="s">${t?`Entrou <span class="nw">${brl0(t.e)}</span> · Saiu <span class="nw">${brl0(t.s)}</span>`:"…"}</span></span>
+      <span><b>${esc(p.nome)}</b><span class="s">${t?`Entrou <span class="nw">${brl0(t.e)}</span> · Saiu <span class="nw">${brl0(t.s)}</span>`:"…"}</span></span>
       <span class="sb num" style="color:${t&&t.e-t.s<0?"var(--out)":"var(--in)"}">${t?brl0(Math.abs(t.e-t.s)):""}<small>${t?(t.e-t.s<0?"faltou":"sobrou"):""}</small></span></button>`}
-  if(!readOnly()){
-    const G=S.catGlobal||CAT_PADRAO;
-    h+=`<section class="card" style="margin-top:18px"><h2>Configurações do app</h2><p class="muted small" style="margin:-6px 0 4px">Categorias que aparecem para toda a família. Toque numa para trocar o nome, o emoji ou a ordem. Cada pessoa ainda pode criar categorias extras só para ela.</p>
-      ${["saida","entrada"].map(t=>`<div class="sec-t" style="margin-top:14px">${t==="saida"?"Categorias de gasto":"Categorias de entrada"}</div><div class="lista-cat">${G[t].map((c,i)=>`<span class="lc"><button style="all:unset;cursor:pointer" data-act="editcatg" data-tipo="${t}" data-i="${i}">${c.emoji} ${esc(c.nome)}</button><button data-act="delcatg" data-tipo="${t}" data-i="${i}" aria-label="Tirar ${esc(c.nome)}">${ICON.x}</button></span>`).join("")}</div>
-      <div class="add-cat"><input id="neg-${t}" placeholder="😀" maxlength="4" aria-label="Emoji"><input id="nng-${t}" placeholder="Nova categoria" maxlength="24" aria-label="Nome da categoria"><button class="btn" data-act="addcatg" data-tipo="${t}">Criar</button></div>`).join("")}</section>`;
-  }
-  h+=`<section class="card" style="margin-top:18px"><h2>Quem pode usar o app</h2>
-    <p class="muted small" style="margin:-6px 0 10px">Só os e-mails desta lista conseguem usar o app. Quem não estiver aqui até cria a conta, mas fica esperando você liberar. Você não precisa estar na lista.</p>
-    <div class="lista-cat">${(S.acesso||[]).map((e,i)=>`<span class="lc">${esc(e)}<button data-act="delacesso" data-i="${i}" aria-label="Tirar ${esc(e)}">${ICON.x}</button></span>`).join("")||'<span class="muted small">Ninguém liberado ainda.</span>'}</div>
-    <div class="add-cat" style="grid-template-columns:1fr auto"><input id="novoacesso" type="email" placeholder="e-mail da pessoa" autocomplete="off" aria-label="E-mail para liberar"><button class="btn" data-act="addacesso">Liberar</button></div>
-    <p class="faint small" style="margin:8px 0 0">Tirar alguém da lista bloqueia o acesso, mas não apaga os lançamentos dessa pessoa.</p></section>
-    ${readOnly()?"":`<button class="menu-item" data-act="sair" style="color:var(--out);justify-content:center">${api.mode==="demo"?"Recomeçar demonstração":"Sair da conta"}</button>`}`;
+  if(ps.length)h+=`<p class="faint small" style="text-align:center;margin:6px 0 0">Você só visualiza. Quem lança é cada pessoa.</p>`;
   return h;
+}
+function vHubAcessos(){
+  const ps=pessoasFam(),porEmail=new Map(ps.map(p=>[(p.email||"").toLowerCase(),p]));
+  const lista=S.acesso||[];
+  let h=`<section class="card"><h2>Liberar uma pessoa</h2><div class="add-cat" style="grid-template-columns:1fr auto;margin-top:0"><input id="novoacesso" type="email" placeholder="e-mail da pessoa" autocomplete="off" aria-label="E-mail para liberar"><button class="btn" data-act="addacesso">Liberar</button></div>
+    <p class="faint small" style="margin:8px 0 0">Depois de liberar, mande o link do app. A pessoa toca em “Criar conta” usando esse mesmo e-mail.</p></section>`;
+  h+=`<div class="sec-t">Liberados (${lista.length})</div>`;
+  if(!lista.length)h+=`<div class="card"><p class="muted" style="margin:0">Ninguém liberado ainda.</p></div>`;
+  else h+=`<div class="itens">${lista.map((e,i)=>{const p=porEmail.get(e);return `<div class="pg"><span class="av" style="width:38px;height:38px;font-size:15px;background:${p?corAv(p.nome):"var(--faint)"}">${esc(inicial(p?p.nome:e))}</span>
+      <div style="min-width:0"><div class="t">${esc(p?p.nome:e)}</div><div class="s ${p?"ok":""}">${p?esc(e)+" · já usa o app":"ainda não criou a conta"}</div></div>
+      <button class="link" style="color:var(--out);font-size:14px" data-act="delacesso" data-i="${i}">Bloquear</button></div>`}).join("")}</div>`;
+  h+=`<p class="faint small" style="margin:10px 2px 0">Bloquear tira o acesso na hora, mas não apaga os lançamentos da pessoa. Você não precisa estar na lista.</p>`;
+  return h;
+}
+function vHubConfig(){
+  const G=S.catGlobal||CAT_PADRAO;
+  return ["saida","entrada"].map(t=>`<section class="card"><h2>${t==="saida"?"Categorias de gasto":"Categorias de entrada"}<small class="muted" style="font-family:var(--body);font-size:13px">${G[t].length}</small></h2>
+    <div class="lista-cat">${G[t].map((c,i)=>`<span class="lc"><button style="all:unset;cursor:pointer" data-act="editcatg" data-tipo="${t}" data-i="${i}">${c.emoji} ${esc(c.nome)}</button><button data-act="delcatg" data-tipo="${t}" data-i="${i}" aria-label="Tirar ${esc(c.nome)}">${ICON.x}</button></span>`).join("")}</div>
+    <div class="add-cat"><input id="neg-${t}" placeholder="😀" maxlength="4" aria-label="Emoji"><input id="nng-${t}" placeholder="Nova categoria" maxlength="24" aria-label="Nome da categoria"><button class="btn" data-act="addcatg" data-tipo="${t}">Criar</button></div></section>`).join("")+
+    `<p class="faint small" style="margin:0 2px">Toque numa categoria para trocar o nome, o emoji ou a ordem. Valem para toda a família; cada pessoa ainda pode criar categorias extras só para ela.</p>`;
 }
 let famCarregando=null;
 async function carregarFamilia(){
@@ -992,6 +1051,7 @@ document.addEventListener("click",async ev=>{
     case "mes":S[d.c]=mesAdd(S[d.c],+d.n);S.filtroCat=null;render();break;
     case "novo":novoLanc(d.modo);break;
     case "menu":abrirSheet({kind:"menu"});break;
+    case "hub":S.hubView=d.v;S.tab="familia";render();scrollTo(0,0);break;
     case "recarregar":location.reload();break;
     case "sairbloq":api.sair();break;
     case "addacesso":{const e=($("#novoacesso").value||"").trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))return toast("Digite um e-mail válido.");const l=[...(S.acesso||[])];if(l.includes(e))return toast("Esse e-mail já está liberado.");l.push(e);
@@ -1031,9 +1091,9 @@ document.addEventListener("click",async ev=>{
     case "dispensar":lsSet(d.k,"1");render();break;
     case "vercat":S.tab="lista";S.filtroCat=d.cat;S.busca="";render();scrollTo(0,0);break;
     case "filtro":S.filtroCat=d.cat||null;render();break;
-    case "trocar":S.tab="familia";S.famMes={};render();break;
+    case "trocar":S.tab="familia";S.hubView="familia";S.famMes={};render();break;
     case "abrir":await abrirConta(d.uid);S.tab="inicio";render();scrollTo(0,0);break;
-    case "voltar":await abrirConta(S.me.uid);S.tab=S.isAdmin?"familia":"inicio";S.famMes={};render();scrollTo(0,0);break;
+    case "voltar":await abrirConta(S.me.uid);S.tab=S.isAdmin?"familia":"inicio";if(S.isAdmin)S.hubView="familia";S.famMes={};render();scrollTo(0,0);break;
     case "salvarnome":{const n=$("#pnome").value.trim();if(!n)return;S.perfil.nome=n;await salvarPerfil();toast("Nome salvo.");render();break}
     case "addcat":{const t=d.tipo,n=$("#nn-"+t).value.trim(),e=$("#ne-"+t).value.trim()||"🏷️";if(!n)return toast("Escreva o nome da categoria.");
       if(S.catGlobal){if(catsDe(t).some(c=>c.nome.toLowerCase()===n.toLowerCase()))return toast("Essa categoria já existe.");S.perfil.catExtras=S.perfil.catExtras||{saida:[],entrada:[]};(S.perfil.catExtras[t]??=[]).push({nome:n,emoji:e});await salvarPerfil();render();break}
