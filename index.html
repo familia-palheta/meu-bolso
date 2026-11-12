@@ -329,7 +329,10 @@ const S={me:null,perfil:null,viewUid:null,viewPerfil:null,lanc:[],fixas:[],pagar
 let api=null,unsubs=[],pendingNome="";
 const readOnly=()=>S.me&&S.viewUid!==S.me.uid;
 const perfilAtivo=()=>S.viewPerfil||S.perfil||{};
-const catsDe=tipo=>(perfilAtivo().categorias||CAT_PADRAO)[tipo]||[];
+function catsDe(tipo){
+  if(S.catGlobal){const g=S.catGlobal[tipo]||[],ex=((perfilAtivo().catExtras||{})[tipo]||[]).filter(e=>!g.some(x=>x.nome===e.nome));return[...g,...ex]}
+  return(perfilAtivo().categorias||CAT_PADRAO)[tipo]||[];
+}
 const contas=()=>perfilAtivo().contas||CONTAS_PADRAO;
 const cartoes=()=>perfilAtivo().cartoes||[];
 const contaDe=id=>contas().find(c=>c.id===id);
@@ -642,6 +645,12 @@ function vFamilia(){
     h+=`<button class="pessoa" data-act="abrir" data-uid="${esc(p.uid)}"><span class="av" style="background:${corAv(p.nome)}">${esc(inicial(p.nome))}</span>
       <span><b>${esc(p.nome)}${eu?" (você)":""}</b><span class="s">${t?`Entrou <span class="nw">${brl0(t.e)}</span> · Saiu <span class="nw">${brl0(t.s)}</span>`:"…"}</span></span>
       <span class="sb num" style="color:${t&&t.e-t.s<0?"var(--out)":"var(--in)"}">${t?brl0(Math.abs(t.e-t.s)):""}<small>${t?(t.e-t.s<0?"faltou":"sobrou"):""}</small></span></button>`}
+  if(!readOnly()){
+    const G=S.catGlobal||CAT_PADRAO;
+    h+=`<section class="card" style="margin-top:18px"><h2>Configurações do app</h2><p class="muted small" style="margin:-6px 0 4px">Categorias que aparecem para toda a família. Toque numa para trocar o nome, o emoji ou a ordem. Cada pessoa ainda pode criar categorias extras só para ela.</p>
+      ${["saida","entrada"].map(t=>`<div class="sec-t" style="margin-top:14px">${t==="saida"?"Categorias de gasto":"Categorias de entrada"}</div><div class="lista-cat">${G[t].map((c,i)=>`<span class="lc"><button style="all:unset;cursor:pointer" data-act="editcatg" data-tipo="${t}" data-i="${i}">${c.emoji} ${esc(c.nome)}</button><button data-act="delcatg" data-tipo="${t}" data-i="${i}" aria-label="Tirar ${esc(c.nome)}">${ICON.x}</button></span>`).join("")}</div>
+      <div class="add-cat"><input id="neg-${t}" placeholder="😀" maxlength="4" aria-label="Emoji"><input id="nng-${t}" placeholder="Nova categoria" maxlength="24" aria-label="Nome da categoria"><button class="btn" data-act="addcatg" data-tipo="${t}">Criar</button></div>`).join("")}</section>`;
+  }
   h+=`<section class="card" style="margin-top:18px"><h2>Quem pode usar o app</h2>
     <p class="muted small" style="margin:-6px 0 10px">Só os e-mails desta lista conseguem usar o app. Quem não estiver aqui até cria a conta, mas fica esperando você liberar. Você não precisa estar na lista.</p>
     <div class="lista-cat">${(S.acesso||[]).map((e,i)=>`<span class="lc">${esc(e)}<button data-act="delacesso" data-i="${i}" aria-label="Tirar ${esc(e)}">${ICON.x}</button></span>`).join("")||'<span class="muted small">Ninguém liberado ainda.</span>'}</div>
@@ -666,7 +675,11 @@ function vMais(){
     ${ro?`<p class="muted" style="margin:0">${esc(p.email||"")}</p>`:`<label class="campo"><span>Seu nome</span><input id="pnome" value="${esc(p.nome)}" maxlength="40"></label>
     <p class="muted" style="margin:0 0 10px;font-size:13.5px">${esc(S.me.email||"")}</p><button class="btn sec sm" data-act="salvarnome">Salvar nome</button>`}</section>`;
   for(const tipo of["saida","entrada"]){
-    h+=`<section class="card"><h2>Categorias de ${tipo==="saida"?"gasto":"entrada"}</h2><div class="lista-cat">${catsDe(tipo).map((c,i)=>`<span class="lc">${c.emoji} ${esc(c.nome)}${ro?"":`<button data-act="delcat" data-tipo="${tipo}" data-i="${i}" aria-label="Remover ${esc(c.nome)}">${ICON.x}</button>`}</span>`).join("")}</div>
+    const g=S.catGlobal?(S.catGlobal[tipo]||[]):null;
+    const ex=g?(((perfilAtivo().catExtras||{})[tipo]||[]).filter(e=>!g.some(x=>x.nome===e.nome))):null;
+    const chips=g?[...g.map(c=>`<span class="lc" style="padding-right:11px">${c.emoji} ${esc(c.nome)}</span>`),...ex.map((c,i)=>`<span class="lc">${c.emoji} ${esc(c.nome)}${ro?"":`<button data-act="delextra" data-tipo="${tipo}" data-nome="${esc(c.nome)}" aria-label="Remover ${esc(c.nome)}">${ICON.x}</button>`}</span>`)].join("")
+      :catsDe(tipo).map((c,i)=>`<span class="lc">${c.emoji} ${esc(c.nome)}${ro?"":`<button data-act="delcat" data-tipo="${tipo}" data-i="${i}" aria-label="Remover ${esc(c.nome)}">${ICON.x}</button>`}</span>`).join("");
+    h+=`<section class="card"><h2>Categorias de ${tipo==="saida"?"gasto":"entrada"}</h2>${g?`<p class="muted small" style="margin:-6px 0 10px">As categorias principais são definidas no app para toda a família. Você pode criar outras só para você.</p>`:""}<div class="lista-cat">${chips}</div>
     ${ro?"":`<div class="add-cat"><input id="ne-${tipo}" placeholder="😀" maxlength="4" aria-label="Emoji"><input id="nn-${tipo}" placeholder="Nova categoria" maxlength="24" aria-label="Nome da categoria"><button class="btn" data-act="addcat" data-tipo="${tipo}">Criar</button></div>`}</section>`;
   }
   h+=`<section class="card"><button class="menu-item" data-act="csv"><span>📄 Baixar planilha (todos os lançamentos)</span>${ICON.right}</button>
@@ -704,7 +717,7 @@ const origensOps=(comCartao)=>[...contas().map(c=>["c:"+c.id,c.emoji+" "+esc(c.n
 function abrirSheet(sh){if(readOnly()&&!["fatinfo","pago"].includes(sh.kind))return;S.sh=sh;sheetRender(true)}
 function fecharSheet(){document.querySelector(".ov")?.remove();S.sh=null}
 function sheetRender(primeira){
-  const R={menu:shMenu,lanc:shLanc,pagar:shPagar,pago:shPago,fixa:shFixa,pagaritem:shPagarItem,conta:shConta,cartao:shCartao,fatinfo:shFatura}[S.sh.kind];
+  const R={catg:shCatg,menu:shMenu,lanc:shLanc,pagar:shPagar,pago:shPago,fixa:shFixa,pagaritem:shPagarItem,conta:shConta,cartao:shCartao,fatinfo:shFatura}[S.sh.kind];
   let ov=document.querySelector(".ov"),sc=0;
   if(!ov){ov=document.createElement("div");ov.className="ov";ov.dataset.act="fecharov";ov.innerHTML=`<div class="sheet" role="dialog" aria-modal="true"></div>`;document.body.appendChild(ov)}
   const sh=ov.querySelector(".sheet");sc=sh.scrollTop;
@@ -722,6 +735,14 @@ function novoLanc(modo){
   if(modo==="entrada"&&origem.startsWith("k:"))origem="";
   if(modo==="parcelado")origem=cartoes().length?"k:"+cartoes()[0].id:"";
   abrirSheet({kind:"lanc",modo,via:"cartao",cents:0,descricao:"",categoria:"",data:hoje(),origem,parcelas:modo==="parcelado"?2:1,rec:"uma",nParc:2,focarValor:true});
+}
+function shCatg(){
+  const F=S.sh;
+  return shHead("Editar categoria")+`<div class="dois-campos" style="grid-template-columns:90px 1fr"><label class="campo"><span>Emoji</span><input data-bind="emoji" value="${esc(F.emoji)}" maxlength="4" style="text-align:center;font-size:22px;padding:8px"></label>
+    <label class="campo"><span>Nome</span><input data-bind="nome" value="${esc(F.nome)}" maxlength="24"></label></div>
+    <p class="faint small" style="margin:4px 0 0">Mudar o nome vale para os próximos lançamentos. Os lançamentos que já existem continuam com o nome antigo (“${esc(F.orig)}”).</p>
+    <div class="erro" id="sherro" hidden></div>
+    <div class="acoes"><button class="btn full" data-act="salvarcatg">Salvar</button>${F.i>0?`<button class="btn sec full" data-act="subircatg">⬆ Mover para cima na lista</button>`:""}</div>`;
 }
 function shMenu(){
   const op=(modo,ic,t,s,cor)=>`<button class="menu-op" data-act="novo" data-modo="${modo}"><span class="mi" style="background:${cor}">${ic}</span><span><b>${t}</b><span>${s}</span></span>${ICON.right}</button>`;
@@ -1014,7 +1035,18 @@ document.addEventListener("click",async ev=>{
     case "abrir":await abrirConta(d.uid);S.tab="inicio";render();scrollTo(0,0);break;
     case "voltar":await abrirConta(S.me.uid);S.tab=S.isAdmin?"familia":"inicio";S.famMes={};render();scrollTo(0,0);break;
     case "salvarnome":{const n=$("#pnome").value.trim();if(!n)return;S.perfil.nome=n;await salvarPerfil();toast("Nome salvo.");render();break}
-    case "addcat":{const t=d.tipo,n=$("#nn-"+t).value.trim(),e=$("#ne-"+t).value.trim()||"🏷️";if(!n)return toast("Escreva o nome da categoria.");const cs=S.perfil.categorias[t];if(cs.some(c=>c.nome.toLowerCase()===n.toLowerCase()))return toast("Essa categoria já existe.");cs.push({nome:n,emoji:e});await salvarPerfil();render();break}
+    case "addcat":{const t=d.tipo,n=$("#nn-"+t).value.trim(),e=$("#ne-"+t).value.trim()||"🏷️";if(!n)return toast("Escreva o nome da categoria.");
+      if(S.catGlobal){if(catsDe(t).some(c=>c.nome.toLowerCase()===n.toLowerCase()))return toast("Essa categoria já existe.");S.perfil.catExtras=S.perfil.catExtras||{saida:[],entrada:[]};(S.perfil.catExtras[t]??=[]).push({nome:n,emoji:e});await salvarPerfil();render();break}
+      const cs=S.perfil.categorias[t];if(cs.some(c=>c.nome.toLowerCase()===n.toLowerCase()))return toast("Essa categoria já existe.");cs.push({nome:n,emoji:e});await salvarPerfil();render();break}
+    case "delextra":{if(!confirmar(el,"Toque de novo no × para remover"))return;const t=d.tipo;S.perfil.catExtras[t]=(S.perfil.catExtras[t]||[]).filter(c=>c.nome!==d.nome);await salvarPerfil();render();break}
+    case "addcatg":{const t=d.tipo,n=($("#nng-"+t).value||"").trim(),e=($("#neg-"+t).value||"").trim()||"🏷️";if(!n)return toast("Escreva o nome da categoria.");
+      const G=structuredClone(S.catGlobal||CAT_PADRAO);if(G[t].some(c=>c.nome.toLowerCase()===n.toLowerCase()))return toast("Essa categoria já existe.");G[t].push({nome:n,emoji:e});await salvarCatGlobal(G,"Categoria criada para todos.");break}
+    case "delcatg":{if(!confirmar(el,"Toque de novo no × para tirar de todos"))return;const G=structuredClone(S.catGlobal||CAT_PADRAO);G[d.tipo].splice(+d.i,1);await salvarCatGlobal(G,"Tirada da lista. Os lançamentos antigos continuam.");break}
+    case "editcatg":{const G=S.catGlobal||CAT_PADRAO,c=G[d.tipo][+d.i];abrirSheet({kind:"catg",tipo:d.tipo,i:+d.i,nome:c.nome,emoji:c.emoji,orig:c.nome});break}
+    case "salvarcatg":{const F=S.sh,n=String(F.nome||"").trim();if(!n)return erroSh("Escreva o nome.");const G=structuredClone(S.catGlobal||CAT_PADRAO);
+      if(G[F.tipo].some((c,i)=>i!==F.i&&c.nome.toLowerCase()===n.toLowerCase()))return erroSh("Já existe uma categoria com esse nome.");
+      G[F.tipo][F.i]={nome:n,emoji:String(F.emoji||"").trim()||"🏷️"};fecharSheet();await salvarCatGlobal(G,"Categoria alterada.");break}
+    case "subircatg":{const G=structuredClone(S.catGlobal||CAT_PADRAO),a=G[S.sh.tipo],i=S.sh.i;if(i>0){[a[i-1],a[i]]=[a[i],a[i-1]];S.sh.i=i-1;await salvarCatGlobal(G,"Movida para cima.",true)}break}
     case "delcat":{const t=d.tipo,i=+d.i,c=S.perfil.categorias[t][i];if(!confirmar(el,"Toque de novo no × para remover"))return;S.perfil.categorias[t].splice(i,1);await salvarPerfil();toast(`"${c.nome}" removida. Os lançamentos antigos continuam.`);render();break}
     case "csv":baixarCSV();break;
     case "sair":if(confirmar(el,api.mode==="demo"?"Toque de novo para apagar os dados de exemplo":"Toque de novo para sair"))api.sair();break;
@@ -1067,7 +1099,8 @@ function baixarCSV(){
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
   a.download="meu-bolso-"+(primeiroNome(p.nome)||"conta").toLowerCase()+"-"+hoje()+".csv";document.body.appendChild(a);a.click();a.remove();
 }
-async function salvarPerfil(){try{await api.savePerfil(S.me.uid,{nome:S.perfil.nome,categorias:S.perfil.categorias,contas:S.perfil.contas||CONTAS_PADRAO,cartoes:S.perfil.cartoes||[]})}catch(e){toast("Não consegui salvar agora.")}}
+async function salvarCatGlobal(G,msg,manterSheet){try{await api.setCategorias(G);S.catGlobal=G;toast(msg);render();if(manterSheet&&S.sh)sheetRender()}catch(e){console.warn(e);toast("Não consegui salvar. Confira as regras do Firebase.")}}
+async function salvarPerfil(){try{await api.savePerfil(S.me.uid,{nome:S.perfil.nome,categorias:S.perfil.categorias,catExtras:S.perfil.catExtras||{saida:[],entrada:[]},contas:S.perfil.contas||CONTAS_PADRAO,cartoes:S.perfil.cartoes||[]})}catch(e){toast("Não consegui salvar agora.")}}
 
 async function abrirConta(uid){
   unsubs.forEach(u=>u&&u());unsubs=[];fecharSheet();
@@ -1093,6 +1126,7 @@ async function aoEntrar(user){
   if(!p.contas)p.contas=structuredClone(CONTAS_PADRAO);
   if(!p.cartoes)p.cartoes=[];
   S.perfil=p;
+  try{S.catGlobal=await api.getCategorias()}catch(e){S.catGlobal=null}
   await abrirConta(user.uid);render();
   // administradora: só ela consegue ler a lista de acesso
   try{S.acesso=await api.getAcesso();S.isAdmin=true;S.tab="familia";render();S.familia=await listarFamilia();S.famMes={};render()}catch(e){}
@@ -1123,6 +1157,8 @@ async function firebaseApi(cfg){
     familia:async()=>{const s=await D.getDocs(D.collection(db,"usuarios"));return s.docs.map(d=>({uid:d.id,...d.data()}))},
     getAcesso:async()=>{const s=await D.getDoc(D.doc(db,"config","acesso"));return s.exists()?(s.data().emails||[]):[]},
     setAcesso:emails=>D.setDoc(D.doc(db,"config","acesso"),{emails}),
+    getCategorias:async()=>{const s=await D.getDoc(D.doc(db,"config","categorias"));return s.exists()?s.data():null},
+    setCategorias:c=>D.setDoc(D.doc(db,"config","categorias"),{saida:c.saida,entrada:c.entrada}),
     lancDoMes:async(uid,m)=>{const s=await D.getDocs(D.query(col(uid,"lancamentos"),D.where("data",">=",m+"-01"),D.where("data","<=",m+"-31")));return s.docs.map(d=>d.data())},
   };
 }
@@ -1151,6 +1187,8 @@ function demoApi(){
     familia:async()=>Object.entries(st.perfis).map(([uid,p])=>({uid,...structuredClone(p)})),
     lancDoMes:async(uid,m)=>arr(uid,"lancamentos").filter(l=>l.data.startsWith(m)),
     getAcesso:async()=>st.acesso||(st.acesso=["rodrigo@exemplo.com"]),
+    getCategorias:async()=>st.catGlobal?structuredClone(st.catGlobal):null,
+    setCategorias:async c=>{st.catGlobal=structuredClone(c);save()},
     setAcesso:async emails=>{st.acesso=[...emails];save()},
   };
 }
