@@ -229,7 +229,7 @@ main{max-width:620px;margin:0 auto;padding:6px 16px calc(110px + env(safe-area-i
 .kpi span{display:block;font-size:12px;font-weight:700;color:var(--muted);line-height:1.2}
 .kpi b{display:block;font-family:var(--display);font-size:20px;margin-top:4px;line-height:1.1}
 .tiles{display:grid;grid-template-columns:1fr;gap:12px}
-@media(min-width:640px){.tiles{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:640px){.tiles{grid-template-columns:repeat(2,1fr)}}
 .tile{all:unset;cursor:pointer;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;transition:border-color .15s,box-shadow .15s}
 .tile:hover{border-color:var(--brand-2);box-shadow:0 6px 18px rgba(29,38,34,.08)}
 .tile .tic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;margin-bottom:6px}
@@ -455,11 +455,12 @@ function render(){
   const nomeVer=readOnly()?(S.viewPerfil?.nome||"…"):(S.perfil?.nome||"");
   let h=`<header class="top"><div class="top-in">
     <div class="logo"><div class="logo-mark">${ICON.wallet}</div><b>Meu Bolso</b></div>
+    ${S.isAdmin&&S.minhaConta&&!readOnly()?`<button class="who" data-act="painel" aria-label="Voltar ao painel"><span class="av" style="background:var(--brand);color:#fff">${ICON.left.replace('<svg','<svg style="width:14px;height:14px"')}</span><span>Painel</span></button>`:""}
     ${S.isAdmin&&readOnly()?`<button class="who" data-act="trocar" aria-label="Família: trocar de conta"><span class="av" style="background:${corAv(nomeVer)}">${esc(inicial(nomeVer))}</span><span>${esc(primeiroNome(nomeVer))}</span>${ICON.down}</button>`:""}
   </div></header>`;
   if(api.mode==="demo")h+=`<div class="banner demo"><div><span>Modo demonstração: dados de exemplo, só neste aparelho.</span></div></div>`;
   if(readOnly())h+=`<div class="banner"><div><span>Vendo a conta de <b>${esc(S.viewPerfil?.nome)}</b> · só leitura</span><button data-act="voltar">Voltar à família</button></div></div>`;
-  const hub=S.isAdmin&&!readOnly();
+  const hub=S.isAdmin&&!readOnly()&&!S.minhaConta;
   if(hub)S.tab="familia";
   const v={inicio:vInicio,lista:vLista,pagar:vPagar,familia:vFamilia,mais:vMais}[S.tab]||vInicio;
   h+=`<main>${hub||S.carregado?v():'<div class="load">Carregando…</div>'}</main>`;
@@ -681,6 +682,7 @@ function vHubHome(){
   const tile=(v,ic,cor,t,d,foot)=>`<button class="tile" data-act="hub" data-v="${v}"><span class="tic" style="background:${cor}">${ic}</span><span class="tt">${t}</span><span class="td">${d}</span><span class="tf">${foot}${ICON.right}</span></button>`;
   return `<div class="hub-hello"><span class="eyebrow">Painel da administradora</span><h1>Olá${nome?", "+esc(nome):""}</h1><p>O que você quer fazer hoje?</p></div>
   <div class="tiles">
+    <button class="tile" data-act="minhas"><span class="tic" style="background:#7A4FB5">${ICON.wallet}</span><span class="tt">Minhas finanças</span><span class="td">Seus lançamentos, cartões e contas a pagar, só para você.</span><span class="tf">${(()=>{const n=doMes(mesAtual()).length;return n?n+" lançamento"+(n>1?"s":"")+" este mês":"Comece a lançar"})()}${ICON.right}</span></button>
     ${tile("familia",ICON.users,"var(--brand)","Contas da família","Abra a conta de cada pessoa para ver lançamentos, gastos e o que falta pagar.",`${ps.length} ${ps.length===1?"pessoa":"pessoas"}`)}
     ${tile("acessos",ICON.key,"#3B6EA1","Acessos","Libere quem pode usar o app e bloqueie quando precisar.",`${lib} liberado${lib===1?"":"s"}${aguard?` · ${aguard} sem conta ainda`:""}`)}
     ${tile("config",ICON.gear,"#8A5A1C","Configurações","Categorias de gasto e de entrada usadas por todos.",`${ncat} categorias`)}
@@ -1051,7 +1053,9 @@ document.addEventListener("click",async ev=>{
     case "mes":S[d.c]=mesAdd(S[d.c],+d.n);S.filtroCat=null;render();break;
     case "novo":novoLanc(d.modo);break;
     case "menu":abrirSheet({kind:"menu"});break;
-    case "hub":S.hubView=d.v;S.tab="familia";render();scrollTo(0,0);break;
+    case "minhas":S.minhaConta=true;S.tab="inicio";S.mes=mesAtual();render();scrollTo(0,0);break;
+    case "painel":S.minhaConta=false;S.hubView="home";S.tab="familia";fecharSheet();render();scrollTo(0,0);break;
+    case "hub":S.minhaConta=false;S.hubView=d.v;S.tab="familia";render();scrollTo(0,0);break;
     case "recarregar":location.reload();break;
     case "sairbloq":api.sair();break;
     case "addacesso":{const e=($("#novoacesso").value||"").trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))return toast("Digite um e-mail válido.");const l=[...(S.acesso||[])];if(l.includes(e))return toast("Esse e-mail já está liberado.");l.push(e);
@@ -1092,7 +1096,7 @@ document.addEventListener("click",async ev=>{
     case "vercat":S.tab="lista";S.filtroCat=d.cat;S.busca="";render();scrollTo(0,0);break;
     case "filtro":S.filtroCat=d.cat||null;render();break;
     case "trocar":S.tab="familia";S.hubView="familia";S.famMes={};render();break;
-    case "abrir":await abrirConta(d.uid);S.tab="inicio";render();scrollTo(0,0);break;
+    case "abrir":S.minhaConta=false;await abrirConta(d.uid);S.tab="inicio";render();scrollTo(0,0);break;
     case "voltar":await abrirConta(S.me.uid);S.tab=S.isAdmin?"familia":"inicio";if(S.isAdmin)S.hubView="familia";S.famMes={};render();scrollTo(0,0);break;
     case "salvarnome":{const n=$("#pnome").value.trim();if(!n)return;S.perfil.nome=n;await salvarPerfil();toast("Nome salvo.");render();break}
     case "addcat":{const t=d.tipo,n=$("#nn-"+t).value.trim(),e=$("#ne-"+t).value.trim()||"🏷️";if(!n)return toast("Escreva o nome da categoria.");
